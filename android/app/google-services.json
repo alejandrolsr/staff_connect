@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "439040197507",
+    "project_id": "staffconnect-2026",
+    "storage_bucket": "staffconnect-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439040197507:android:266d02213d7f84684d6cb6",
+        "android_client_info": {
+          "package_name": "com.example.staff_connect_demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2AqGEa8dvaBtw-F3Rjvjo6H8NzguBwTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
