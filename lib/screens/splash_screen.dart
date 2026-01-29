@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../routes/app_routes.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,16 +13,27 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
+    _checkSession();
   }
 
-  _navigateToLogin() async {
-
-    await Future.delayed(const Duration(seconds: 2), () {});
+  _checkSession() async {
+    //Esperamos 2 segundos para que carge el logo
+    await Future.delayed(const Duration(seconds: 2));
     
+    //Esperamos a que Firebase termine de comprobar el disco
+    var user = await FirebaseAuth.instance.authStateChanges().first;
+
     if (!mounted) return;
 
-    Navigator.pushReplacementNamed(context, AppRoutes.login);
+    if (user != null) {
+      // Si hay usuario va directo al Home
+      print("Sesión recuperada: ${user.email}");
+      Navigator.pushReplacementNamed(context, 'home');
+    } else {
+      // NO hay usuario vuelve al Login
+      print("No hay sesión guardada");
+      Navigator.pushReplacementNamed(context, 'login');
+    }
   }
 
   @override
@@ -33,13 +44,10 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
             Image.asset('assets/images/logo_miramar.png', width: 150),
             const SizedBox(height: 20),
-
-            // Texto
             Text(
-              'Miramar Maintenance',
+              'Staff Connect',
               style: GoogleFonts.lato(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -47,8 +55,6 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 50),
-
-            // Spinner
             const CircularProgressIndicator(color: Colors.white)
           ],
         ),

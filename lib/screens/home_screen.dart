@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../routes/app_routes.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,9 +23,14 @@ class HomeScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text('Cerrar Sesión'),
-              onTap: () {
-                // Boton para volver al login borrando el historial
-                Navigator.pushReplacementNamed(context, 'login');
+              onTap: () async {
+                //Firebase cierra sesión
+                await FirebaseAuth.instance.signOut();
+
+                //Navegamos al Login
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(context, AppRoutes.login);
+                }
               },
             ),
           ],
