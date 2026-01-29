@@ -3,7 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 
 class SideMenu extends StatelessWidget {
-  const SideMenu({super.key});
+  // 1. Variable para saber en qué pantalla estamos
+  final String currentPage;
+
+  const SideMenu({super.key, required this.currentPage});
 
   @override
   Widget build(BuildContext context) {
@@ -13,13 +16,9 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          //CABECERA
           UserAccountsDrawerHeader(
             decoration: const BoxDecoration(color: AppTheme.primary),
-            accountName: const Text(
-              "Panel de Personal",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            accountName: const Text("Panel de Personal", style: TextStyle(fontWeight: FontWeight.bold)),
             accountEmail: Text(user?.email ?? "Invitado"),
             currentAccountPicture: const CircleAvatar(
               backgroundColor: Colors.white,
@@ -27,45 +26,58 @@ class SideMenu extends StatelessWidget {
             ),
           ),
 
-          //OPCIONES
+          // --- OPCIÓN INICIO ---
           ListTile(
-            leading: const Icon(Icons.home_outlined, color: AppTheme.primary),
-            title: const Text('Inicio'),
-            onTap: () => Navigator.pop(context), 
-          ),
-          ListTile(
-            leading: const Icon(Icons.history, color: AppTheme.primary),
-            title: const Text('Historial'),
+            leading: Icon(Icons.home_outlined, 
+              color: currentPage == 'home' ? AppTheme.primary : Colors.grey),
+            title: Text('Inicio',
+              style: TextStyle(
+                color: currentPage == 'home' ? AppTheme.primary : Colors.black87,
+                fontWeight: currentPage == 'home' ? FontWeight.bold : FontWeight.normal
+              ),
+            ),
+            selected: currentPage == 'home', // Marca visualmente si estamos aquí
             onTap: () {
-              // Aquí navegaremos al historial
+              // 1. Siempre cerramos el menú primero
+              Navigator.pop(context); 
+              
+              // 2. EL TRUCO: Solo navegamos si NO estamos ya en Home
+              if (currentPage != 'home') {
+                Navigator.pushReplacementNamed(context, 'home');
+              }
             },
           ),
 
+          // --- OPCIÓN TAREAS ---
           ListTile(
-            leading: const Icon(
-              Icons.check_circle_outline,
-              color: AppTheme.primary,
+            leading: Icon(Icons.check_circle_outline, 
+              color: currentPage == 'tasks' ? AppTheme.primary : Colors.grey),
+            title: Text('Tareas Diarias',
+              style: TextStyle(
+                color: currentPage == 'tasks' ? AppTheme.primary : Colors.black87,
+                fontWeight: currentPage == 'tasks' ? FontWeight.bold : FontWeight.normal
+              ),
             ),
-            title: const Text('Tareas Diarias'),
+            selected: currentPage == 'tasks',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, 'tasks');
+              // Solo navegamos si NO estamos ya en Tasks
+              if (currentPage != 'tasks') {
+                Navigator.pushReplacementNamed(context, 'tasks');
+              }
             },
           ),
 
           const Divider(),
-
-          //BOTÓN SALIR
+          
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              'Cerrar Sesión',
-              style: TextStyle(color: Colors.red),
-            ),
+            title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
-                Navigator.pushReplacementNamed(context, 'login');
+                // Usamos pushNamedAndRemoveUntil para borrar todo el historial al salir
+                Navigator.pushNamedAndRemoveUntil(context, 'login', (route) => false);
               }
             },
           ),

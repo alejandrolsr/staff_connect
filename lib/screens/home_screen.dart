@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontSize: 16),
         ),
       ),
-      drawer: const SideMenu(),
+      drawer: const SideMenu(currentPage: 'home'),
 
       // CUERPO DE LA PANTALLA
       body: _incidents.isEmpty

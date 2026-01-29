@@ -17,9 +17,17 @@ class _TaskScreenState extends State<TaskScreen> {
 
   // Lista de tareas
   List<Map<String, dynamic>> tasks = [
-    {"title": "Inspección cuadros eléctricos Planta 1", "done": false, "time": "07:00"},
+    {
+      "title": "Inspección cuadros eléctricos Planta 1",
+      "done": false,
+      "time": "07:00",
+    },
     {"title": "Revisar pH Piscina Principal", "done": false, "time": "08:00"},
-    {"title": "Engrasar puertas giratorias Hall", "done": false, "time": "9:00"},
+    {
+      "title": "Engrasar puertas giratorias Hall",
+      "done": false,
+      "time": "9:00",
+    },
     {"title": "Revisión Calderas Edificio B", "done": false, "time": "11:00"},
     {"title": "Comprobar luces de emergencia", "done": false, "time": "14:00"},
     {"title": "Revisar canales TV", "done": false, "time": "15:00"},
@@ -30,7 +38,10 @@ class _TaskScreenState extends State<TaskScreen> {
     super.initState();
     _timeString = _formatTime(DateTime.now());
     _dateString = _formatDate(DateTime.now());
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => _getTime());
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (Timer t) => _getTime(),
+    );
   }
 
   @override
@@ -49,8 +60,10 @@ class _TaskScreenState extends State<TaskScreen> {
     }
   }
 
-  String _formatTime(DateTime time) => "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
-  String _formatDate(DateTime time) => "${time.day.toString().padLeft(2, '0')}/${time.month.toString().padLeft(2, '0')}/${time.year}";
+  String _formatTime(DateTime time) =>
+      "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+  String _formatDate(DateTime time) =>
+      "${time.day.toString().padLeft(2, '0')}/${time.month.toString().padLeft(2, '0')}/${time.year}";
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +72,7 @@ class _TaskScreenState extends State<TaskScreen> {
         title: const Text('Tareas Diarias', style: TextStyle(fontSize: 18)),
         centerTitle: false,
       ),
-      drawer: const SideMenu(),
+      drawer: const SideMenu(currentPage: 'tasks'),
       body: Column(
         children: [
           // CABECERA HORA/FECHA
@@ -72,17 +85,33 @@ class _TaskScreenState extends State<TaskScreen> {
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                Text(_timeString, style: const TextStyle(fontSize: 45, fontWeight: FontWeight.bold, color: Colors.white)),
-                Text(_dateString, style: const TextStyle(fontSize: 18, color: Colors.white70)),
+                Text(
+                  _timeString,
+                  style: const TextStyle(
+                    fontSize: 45,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  _dateString,
+                  style: const TextStyle(fontSize: 18, color: Colors.white70),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // LISTA
           Expanded(
             child: ListView.builder(
@@ -92,9 +121,14 @@ class _TaskScreenState extends State<TaskScreen> {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 10),
                   elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 5,
+                    ),
                     leading: Checkbox(
                       activeColor: AppTheme.primary,
                       value: tasks[index]['done'],
@@ -106,14 +140,30 @@ class _TaskScreenState extends State<TaskScreen> {
                       tasks[index]['title'],
                       style: TextStyle(
                         fontSize: 16,
-                        decoration: tasks[index]['done'] ? TextDecoration.lineThrough : TextDecoration.none,
-                        color: tasks[index]['done'] ? Colors.grey : Colors.black87,
+                        decoration: tasks[index]['done']
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        color: tasks[index]['done']
+                            ? Colors.grey
+                            : Colors.black87,
                       ),
                     ),
                     trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8)),
-                      child: Text(tasks[index]['time'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        tasks[index]['time'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ),
                 );
