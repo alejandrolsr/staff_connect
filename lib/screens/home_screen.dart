@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../routes/app_routes.dart';
+import '../widgets/side_menu.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,35 +7,38 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Panel de Mantenimiento')),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF005b96)),
-              child: Text(
-                'Menú Miramar',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text('Cerrar Sesión'),
-              onTap: () async {
-                //Firebase cierra sesión
-                await FirebaseAuth.instance.signOut();
+      appBar: AppBar(
+        centerTitle: false,
+        titleSpacing: 10,
+        title: const FittedBox(
+      
+          fit: BoxFit.scaleDown,
+          child: Text('Mantenimiento Gran Hotel Miramar'),
+        ),
+      ),
 
-                //Navegamos al Login
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, AppRoutes.login);
-                }
-              },
+      drawer: const SideMenu(),
+
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.build_circle_outlined, size: 100, color: Colors.grey),
+            SizedBox(height: 20),
+            Text(
+              'Bienvenido al Sistema',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
       ),
-      body: const Center(child: Text('¡Bienvenido al sistema de incidencias!')),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          print('Añadir Incidencia');
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

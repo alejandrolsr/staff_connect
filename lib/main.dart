@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart'; 
-import 'routes/app_routes.dart'; 
+import 'theme/app_theme.dart';
+
+import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/task_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  //Inicialización de Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -18,9 +26,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Staff Connect',
-      initialRoute: AppRoutes.splash, 
-      routes: AppRoutes.routes, 
+      title: 'Miramar Maintenance',
+      
+      theme: AppTheme.lightTheme, 
+
+      initialRoute: 'splash',
+      routes: {
+        'splash': (context) => const SplashScreen(),
+        'login': (context) => const LoginScreen(),
+        'home': (context) => const HomeScreen(),
+        'tasks': (context) => const TaskScreen(),
+      },
     );
   }
 }
