@@ -1,4 +1,8 @@
+import 'dart:io'; // Necesario para borrar archivos del móvil
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../widgets/side_menu.dart';
 
@@ -10,73 +14,106 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Lista donde guardamos las incidencias (Simulación local)
-  final List<Map<String, dynamic>> _incidents = [];
-
-  // Controlador para leer lo que escribes en el diálogo
   final TextEditingController _textController = TextEditingController();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
 
-  // --- LÓGICA: AÑADIR ---
-  void _addIncident() {
-    if (_textController.text.isNotEmpty) {
+  //Variables para la creación de nueva incidencia
+  File? _selectedImage;
+  bool _isLoading = false;
+
+  //SELECCIONAR FOTO
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    //Calidad 50 para ahorrar espacio
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 50);
+
+    if (pickedFile != null) {
       setState(() {
-        _incidents.add({
-          'title': _textController.text,
-          'isDone': false, // Por defecto nace pendiente
-          'date': DateTime.now(),
-        });
+        _selectedImage = File(pickedFile.path);
       });
-      _textController.clear(); // Limpiamos el campo
-      Navigator.pop(context); // Cerramos el diálogo
     }
   }
 
-  // --- LÓGICA: MARCAR COMO HECHA/PENDIENTE ---
-  void _toggleStatus(int index) {
-    setState(() {
-      _incidents[index]['isDone'] = !_incidents[index]['isDone'];
-    });
+  //GUARDAR INCIDENCIA
+  Future<void> _addIncident() async {
+    if (_textController.text.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    Navigator.pop(context);
+    try {
+      // Guardamos en Firestore
+      await FirebaseFirestore.instance.collection('incidencias').add({
+        'title': _textController.text,
+        'userId': currentUser?.uid,
+        'email': currentUser?.email,
+        'isDone': false,
+        'date': Timestamp.now(),
+        // Guardamos la ruta interna del archivo en el móvil
+        'localImagePath': _selectedImage?.path,
+      });
+
+      _textController.clear();
+      _selectedImage = null;
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Incidencia guardada 📂')));
+      }
+    } catch (e) {
+      debugPrint("Error al guardar: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  // --- LÓGICA: ELIMINAR CON CONFIRMACIÓN CONDICIONAL ---
-  void _deleteIncident(int index) {
-    bool isDone = _incidents[index]['isDone'];
+  //BORRAR INCIDENCIA Y FOTO LOCAL
+  Future<void> _deleteIncident(
+    String docId,
+    bool isDone,
+    String? imagePath,
+  ) async {
+    Future<void> deleteData() async {
+      try {
+        if (imagePath != null) {
+          final file = File(imagePath);
+          if (await file.exists()) {
+            await file.delete();
+            debugPrint("🗑️ Foto eliminada del dispositivo: $imagePath");
+          }
+        }
 
+        //Borramos el documento de la base de datos
+        await FirebaseFirestore.instance
+            .collection('incidencias')
+            .doc(docId)
+            .delete();
+      } catch (e) {
+        debugPrint("Error al borrar: $e");
+      }
+    }
+
+    // Si ya está hecha, borramos directo. Si no, preguntamos.
     if (isDone) {
-      // CASO A: Ya está hecha -> Se borra directo sin preguntar
-      setState(() {
-        _incidents.removeAt(index);
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Incidencia eliminada')));
+      await deleteData();
     } else {
-      // CASO B: Está pendiente -> PREGUNTAMOS PRIMERO
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('¿Estás seguro?'),
+          title: const Text('¿Eliminar?'),
           content: const Text(
-            'Esta incidencia aún está pendiente de resolver.',
+            'Se borrará la incidencia y su foto asociada del dispositivo.',
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Cancelar
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(color: Colors.grey),
-              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: () {
-                setState(() {
-                  _incidents.removeAt(index);
-                });
-                Navigator.pop(context); // Cerrar diálogo
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Incidencia eliminada')),
-                );
+              onPressed: () async {
+                await deleteData();
+                if (mounted) Navigator.pop(context);
               },
               child: const Text(
                 'Eliminar',
@@ -89,31 +126,82 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --- DIÁLOGO PARA CREAR ---
   void _showAddDialog() {
+    _selectedImage = null; // Reseteamos la imagen al abrir
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nueva Incidencia'),
-        content: TextField(
-          controller: _textController,
-          decoration: const InputDecoration(
-            hintText: 'Ej: Fuga de agua hab. 204',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: _addIncident,
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
-            child: const Text('Guardar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Nueva Incidencia'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _textController,
+                  decoration: const InputDecoration(
+                    hintText: 'Ej: Puerta atascada hab. 101',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Previsualización en el diálogo
+                if (_selectedImage != null)
+                  Container(
+                    height: 100,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: FileImage(_selectedImage!),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.camera_alt,
+                        color: AppTheme.primary,
+                      ),
+                      onPressed: () async {
+                        await _pickImage(ImageSource.camera);
+                        setDialogState(() {});
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.photo, color: AppTheme.primary),
+                      onPressed: () async {
+                        await _pickImage(ImageSource.gallery);
+                        setDialogState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: _addIncident,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                ),
+                child: const Text(
+                  'Guardar',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -122,89 +210,105 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,
         title: const Text(
-          'Mantenimiento Gran Hotel Miramar',
+          'Mantenimiento (Local)',
           style: TextStyle(fontSize: 16),
         ),
+        centerTitle: false,
       ),
       drawer: const SideMenu(currentPage: 'home'),
 
-      // CUERPO DE LA PANTALLA
-      body: _incidents.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.assignment_turned_in_outlined,
-                    size: 100,
-                    color: Colors.grey[300],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'No hay incidencias activas',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[500]),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: _incidents.length,
-              itemBuilder: (context, index) {
-                final item = _incidents[index];
-                final bool isDone = item['isDone'];
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('incidencias')
+            .where('userId', isEqualTo: currentUser?.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
 
-                return Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  // Si está hecha, ponemos el fondo un poco grisáceo
-                  color: isDone ? Colors.grey[100] : Colors.white,
-                  child: ListTile(
-                    // 1. ICONO DE ESTADO (Izquierda)
-                    leading: IconButton(
-                      icon: Icon(
-                        isDone
-                            ? Icons.check_circle
-                            : Icons.radio_button_unchecked,
-                        color: isDone ? Colors.green : AppTheme.primary,
-                        size: 30,
+          final docs = snapshot.data!.docs;
+          if (docs.isEmpty) {
+            return const Center(
+              child: Text('No tienes incidencias registradas.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(10),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+              final docId = docs[index].id;
+              final bool isDone = data['isDone'] ?? false;
+
+              // Recuperamos la ruta local de la foto
+              final String? localPath = data['localImagePath'];
+              File? imageFile;
+              if (localPath != null) {
+                imageFile = File(localPath);
+              }
+
+              return Card(
+                color: isDone ? Colors.grey[200] : Colors.white,
+                child: Column(
+                  children: [
+                    // Muestra la foto SI existe el archivo en el móvil
+                    if (imageFile != null && imageFile.existsSync())
+                      SizedBox(
+                        height: 150,
+                        width: double.infinity,
+                        child: Image.file(imageFile, fit: BoxFit.cover),
+                      )
+                    // Si hay ruta pero se borró el archivo, mostramos icono roto
+                    else if (localPath != null)
+                      Container(
+                        height: 60,
+                        width: double.infinity,
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(Icons.broken_image, color: Colors.grey),
+                        ),
                       ),
-                      onPressed: () => _toggleStatus(index),
-                    ),
 
-                    // 2. TÍTULO DE LA INCIDENCIA
-                    title: Text(
-                      item['title'],
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        // Tachamos el texto si está terminada
-                        decoration: isDone ? TextDecoration.lineThrough : null,
-                        color: isDone ? Colors.grey : Colors.black87,
+                    ListTile(
+                      leading: IconButton(
+                        icon: Icon(
+                          isDone
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
+                          color: isDone ? Colors.green : AppTheme.primary,
+                        ),
+                        onPressed: () {
+                          FirebaseFirestore.instance
+                              .collection('incidencias')
+                              .doc(docId)
+                              .update({'isDone': !isDone});
+                        },
+                      ),
+                      title: Text(
+                        data['title'],
+                        style: TextStyle(
+                          decoration: isDone
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          // PASAMOS LA RUTA DE LA FOTO PARA BORRARLA
+                          _deleteIncident(docId, isDone, localPath);
+                        },
                       ),
                     ),
-
-                    subtitle: Text(
-                      isDone ? "Completada" : "Pendiente de revisión",
-                      style: TextStyle(
-                        color: isDone ? Colors.green : Colors.orange,
-                        fontSize: 12,
-                      ),
-                    ),
-
-                    // 3. BOTÓN ELIMINAR (Derecha)
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () => _deleteIncident(index),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-      // BOTÓN FLOTANTE (+)
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
