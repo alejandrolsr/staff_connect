@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Mantenimiento (Local)',
+          'Mantenimiento',
           style: TextStyle(fontSize: 16),
         ),
         centerTitle: false,
