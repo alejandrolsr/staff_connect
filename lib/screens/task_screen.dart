@@ -15,7 +15,7 @@ class _TaskScreenState extends State<TaskScreen> {
   String _dateString = "";
   late Timer _timer;
 
-  // Lista de tareas
+  //Lista de tareas
   List<Map<String, dynamic>> tasks = [
     {
       "title": "Inspección cuadros eléctricos Planta 1",
@@ -75,7 +75,7 @@ class _TaskScreenState extends State<TaskScreen> {
       drawer: const SideMenu(currentPage: 'tasks'),
       body: Column(
         children: [
-          // CABECERA HORA/FECHA
+          //CABECERA HORA y FECHA
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -87,7 +87,7 @@ class _TaskScreenState extends State<TaskScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 
 class SideMenu extends StatelessWidget {
-  // 1. Variable para saber en qué pantalla estamos
   final String currentPage;
 
   const SideMenu({super.key, required this.currentPage});
@@ -16,9 +15,13 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          //CABECERA
           UserAccountsDrawerHeader(
             decoration: const BoxDecoration(color: AppTheme.primary),
-            accountName: const Text("Panel de Personal", style: TextStyle(fontWeight: FontWeight.bold)),
+            accountName: const Text(
+              "Panel de Personal",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             accountEmail: Text(user?.email ?? "Invitado"),
             currentAccountPicture: const CircleAvatar(
               backgroundColor: Colors.white,
@@ -26,63 +29,141 @@ class SideMenu extends StatelessWidget {
             ),
           ),
 
-          // --- OPCIÓN INICIO ---
+          //INICIO
           ListTile(
-            leading: Icon(Icons.home_outlined, 
-              color: currentPage == 'home' ? AppTheme.primary : Colors.grey),
-            title: Text('Inicio',
+            leading: Icon(
+              Icons.home_outlined,
+              color: currentPage == 'home' ? AppTheme.primary : Colors.grey,
+            ),
+            title: Text(
+              'Inicio',
               style: TextStyle(
-                color: currentPage == 'home' ? AppTheme.primary : Colors.black87,
-                fontWeight: currentPage == 'home' ? FontWeight.bold : FontWeight.normal
+                color: currentPage == 'home'
+                    ? AppTheme.primary
+                    : Colors.black87,
+                fontWeight: currentPage == 'home'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
             ),
-            selected: currentPage == 'home', // Marca visualmente si estamos aquí
-            onTap: () {
-              // 1. Siempre cerramos el menú primero
-              Navigator.pop(context); 
-              
-              // 2. EL TRUCO: Solo navegamos si NO estamos ya en Home
-              if (currentPage != 'home') {
-                Navigator.pushReplacementNamed(context, 'home');
-              }
-            },
+            selected: currentPage == 'home',
+            onTap: () => _navigate(context, 'home'),
           ),
 
-          // --- OPCIÓN TAREAS ---
+          //PERFIL
           ListTile(
-            leading: Icon(Icons.check_circle_outline, 
-              color: currentPage == 'tasks' ? AppTheme.primary : Colors.grey),
-            title: Text('Tareas Diarias',
+            leading: Icon(
+              Icons.person_outline,
+              color: currentPage == 'profile' ? AppTheme.primary : Colors.grey,
+            ),
+            title: Text(
+              'Mi Perfil',
               style: TextStyle(
-                color: currentPage == 'tasks' ? AppTheme.primary : Colors.black87,
-                fontWeight: currentPage == 'tasks' ? FontWeight.bold : FontWeight.normal
+                color: currentPage == 'profile'
+                    ? AppTheme.primary
+                    : Colors.black87,
+                fontWeight: currentPage == 'profile'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+            selected: currentPage == 'profile',
+            onTap: () => _navigate(context, 'profile'),
+          ),
+
+          //TAREAS
+          ListTile(
+            leading: Icon(
+              Icons.check_circle_outline,
+              color: currentPage == 'tasks' ? AppTheme.primary : Colors.grey,
+            ),
+            title: Text(
+              'Tareas',
+              style: TextStyle(
+                color: currentPage == 'tasks'
+                    ? AppTheme.primary
+                    : Colors.black87,
+                fontWeight: currentPage == 'tasks'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
             ),
             selected: currentPage == 'tasks',
-            onTap: () {
-              Navigator.pop(context);
-              // Solo navegamos si NO estamos ya en Tasks
-              if (currentPage != 'tasks') {
-                Navigator.pushReplacementNamed(context, 'tasks');
-              }
-            },
+            onTap: () => _navigate(context, 'tasks'),
+          ),
+
+          //TIEMPO
+          ListTile(
+            leading: Icon(
+              Icons.cloud_outlined,
+              color: currentPage == 'weather' ? AppTheme.primary : Colors.grey,
+            ),
+            title: Text(
+              'El Tiempo',
+              style: TextStyle(
+                color: currentPage == 'weather'
+                    ? AppTheme.primary
+                    : Colors.black87,
+                fontWeight: currentPage == 'weather'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+            selected: currentPage == 'weather',
+            onTap: () => _navigate(context, 'weather'),
           ),
 
           const Divider(),
-          
+
+          //CRÉDITOS
+          ListTile(
+            leading: Icon(
+              Icons.info_outline,
+              color: currentPage == 'credits' ? AppTheme.primary : Colors.grey,
+            ),
+            title: Text(
+              'Créditos',
+              style: TextStyle(
+                color: currentPage == 'credits'
+                    ? AppTheme.primary
+                    : Colors.black87,
+                fontWeight: currentPage == 'credits'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+            selected: currentPage == 'credits',
+            onTap: () => _navigate(context, 'credits'),
+          ),
+
+          //SALIR
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+            title: const Text(
+              'Cerrar Sesión',
+              style: TextStyle(color: Colors.red),
+            ),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
-                // Usamos pushNamedAndRemoveUntil para borrar todo el historial al salir
-                Navigator.pushNamedAndRemoveUntil(context, 'login', (route) => false);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  'login',
+                  (route) => false,
+                );
               }
             },
           ),
         ],
       ),
     );
+  }
+
+  //Función para navegar limpio
+  void _navigate(BuildContext context, String routeName) {
+    Navigator.pop(context);
+    if (currentPage != routeName) {
+      Navigator.pushReplacementNamed(context, routeName);
+    }
   }
 }

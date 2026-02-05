@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
 import '../routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,10 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  //Mostramos un circulito de carga mientras verifica
   bool _isLoading = false;
 
-  //Función para hacer Login en la Nube
   Future<void> _doLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -29,26 +27,22 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passController.text.trim(),
         );
 
-        // Si no da error, Volvemos al Home.
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, AppRoutes.home);
-
       } on FirebaseAuthException catch (e) {
-        //Mensaje de error (Contraseña mal, usuario no existe...)
-        String message = 'Error desconocido';
+        String message = 'Error';
         if (e.code == 'user-not-found') message = 'No existe ese correo.';
         if (e.code == 'wrong-password') message = 'Contraseña incorrecta.';
-        if (e.code == 'invalid-email') message = 'El formato del correo está mal.';
-        
+
+        if (e.code == 'invalid-email') {
+          message = 'El formato del correo está mal.';
+        }
+
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
         );
       } finally {
-        //Eliminamos el circulito de carga
         if (mounted) setState(() => _isLoading = false);
       }
     }
@@ -67,17 +61,20 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Image.asset('assets/images/logo_miramar.png', height: 120),
                 const SizedBox(height: 20),
-                
+
                 Text(
                   'Acceso Personal',
-                  style: GoogleFonts.lato(fontSize: 28, color: const Color(0xFF005b96)),
+                  style: GoogleFonts.lato(
+                    fontSize: 28,
+                    color: const Color(0xFF005b96),
+                  ),
                 ),
                 const SizedBox(height: 40),
 
-                //EMAIL
+                // EMAIL
                 TextFormField(
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress, // Cambio a teclado con @
+                  keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     labelText: 'Correo Corporativo',
                     hintText: 'ej: fferban041@g.educaand.es',
@@ -85,13 +82,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icon(Icons.email),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Escribe el correo';
+                    if (value == null || value.isEmpty) {
+                      return 'Escribe el correo';
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
 
-                //CONTRASEÑA
+                // CONTRASEÑA
                 TextFormField(
                   controller: _passController,
                   obscureText: true,
@@ -101,25 +100,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icon(Icons.lock),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Escribe la contraseña';
+                    if (value == null || value.isEmpty) {
+                      return 'Escribe la contraseña';
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 40),
 
-                //BOTÓN
+                // BOTÓN
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _doLogin, // Desactiva si carga
+                    onPressed: _isLoading ? null : _doLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF005b96),
                       foregroundColor: Colors.white,
                     ),
-                    child: _isLoading 
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('ENTRAR', style: TextStyle(fontSize: 18)),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('ENTRAR', style: TextStyle(fontSize: 18)),
                   ),
                 ),
               ],

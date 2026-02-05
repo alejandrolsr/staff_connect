@@ -1,4 +1,4 @@
-import 'dart:io'; // Necesario para borrar archivos del móvil
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,17 +38,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _addIncident() async {
     if (_textController.text.isEmpty) return;
 
+    //Activamos la carga para bloquear la pantalla
     setState(() => _isLoading = true);
     Navigator.pop(context);
+
     try {
-      // Guardamos en Firestore
+      //Guardamos en Firestore
       await FirebaseFirestore.instance.collection('incidencias').add({
         'title': _textController.text,
         'userId': currentUser?.uid,
         'email': currentUser?.email,
         'isDone': false,
         'date': Timestamp.now(),
-        // Guardamos la ruta interna del archivo en el móvil
         'localImagePath': _selectedImage?.path,
       });
 
@@ -67,12 +68,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  //BORRAR INCIDENCIA Y FOTO LOCAL
+  //BORRAR INCIDENCIA Y FOTO
   Future<void> _deleteIncident(
     String docId,
     bool isDone,
     String? imagePath,
   ) async {
+    //Función para borrar foto
     Future<void> deleteData() async {
       try {
         if (imagePath != null) {
@@ -83,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
 
-        //Borramos el documento de la base de datos
+        // Borramos el documento de la base de datos
         await FirebaseFirestore.instance
             .collection('incidencias')
             .doc(docId)
@@ -93,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    // Si ya está hecha, borramos directo. Si no, preguntamos.
+    // Si ya está marcada como hecha, borramos directamente. Si no, preguntamos.
     if (isDone) {
       await deleteData();
     } else {
@@ -112,8 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
+                final navigator = Navigator.of(context);
                 await deleteData();
-                if (mounted) Navigator.pop(context);
+                navigator.pop();
               },
               child: const Text(
                 'Eliminar',
@@ -126,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  //CUADRO DE CREACIÓN INCIDENCIA
   void _showAddDialog() {
     _selectedImage = null; // Reseteamos la imagen al abrir
     showDialog(
@@ -146,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Previsualización en el diálogo
+                //Previsualización
                 if (_selectedImage != null)
                   Container(
                     height: 100,
@@ -210,105 +214,121 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Mantenimiento',
-          style: TextStyle(fontSize: 16),
-        ),
+        title: const Text('Mantenimiento', style: TextStyle(fontSize: 16)),
         centerTitle: false,
       ),
       drawer: const SideMenu(currentPage: 'home'),
 
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('incidencias')
-            .where('userId', isEqualTo: currentUser?.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return const Center(child: CircularProgressIndicator());
-
-          final docs = snapshot.data!.docs;
-          if (docs.isEmpty) {
-            return const Center(
-              child: Text('No tienes incidencias registradas.'),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(10),
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              final docId = docs[index].id;
-              final bool isDone = data['isDone'] ?? false;
-
-              // Recuperamos la ruta local de la foto
-              final String? localPath = data['localImagePath'];
-              File? imageFile;
-              if (localPath != null) {
-                imageFile = File(localPath);
+      body: Stack(
+        children: [
+          //LISTA DE INCIDENCIAS
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('incidencias')
+                .where('userId', isEqualTo: currentUser?.uid)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
               }
 
-              return Card(
-                color: isDone ? Colors.grey[200] : Colors.white,
-                child: Column(
-                  children: [
-                    // Muestra la foto SI existe el archivo en el móvil
-                    if (imageFile != null && imageFile.existsSync())
-                      SizedBox(
-                        height: 150,
-                        width: double.infinity,
-                        child: Image.file(imageFile, fit: BoxFit.cover),
-                      )
-                    // Si hay ruta pero se borró el archivo, mostramos icono roto
-                    else if (localPath != null)
-                      Container(
-                        height: 60,
-                        width: double.infinity,
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(Icons.broken_image, color: Colors.grey),
-                        ),
-                      ),
+              final docs = snapshot.data!.docs;
+              if (docs.isEmpty) {
+                return const Center(
+                  child: Text('No tienes incidencias registradas.'),
+                );
+              }
 
-                    ListTile(
-                      leading: IconButton(
-                        icon: Icon(
-                          isDone
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked,
-                          color: isDone ? Colors.green : AppTheme.primary,
+              return ListView.builder(
+                padding: const EdgeInsets.all(10),
+                itemCount: docs.length,
+                itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  final docId = docs[index].id;
+                  final bool isDone = data['isDone'] ?? false;
+
+                  //Recuperamos la ruta local de la foto
+                  final String? localPath = data['localImagePath'];
+                  File? imageFile;
+                  if (localPath != null) {
+                    imageFile = File(localPath);
+                  }
+
+                  return Card(
+                    color: isDone ? Colors.grey[200] : Colors.white,
+                    child: Column(
+                      children: [
+                        // Muestra la foto SI existe el archivo en el móvil
+                        if (imageFile != null && imageFile.existsSync())
+                          SizedBox(
+                            height: 150,
+                            width: double.infinity,
+                            child: Image.file(imageFile, fit: BoxFit.cover),
+                          )
+                        // Si encontramos la ruta pero se borró el archivo
+                        else if (localPath != null)
+                          Container(
+                            height: 60,
+                            width: double.infinity,
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+
+                        ListTile(
+                          leading: IconButton(
+                            icon: Icon(
+                              isDone
+                                  ? Icons.check_circle
+                                  : Icons.radio_button_unchecked,
+                              color: isDone ? Colors.green : AppTheme.primary,
+                            ),
+                            onPressed: () {
+                              FirebaseFirestore.instance
+                                  .collection('incidencias')
+                                  .doc(docId)
+                                  .update({'isDone': !isDone});
+                            },
+                          ),
+                          title: Text(
+                            data['title'],
+                            style: TextStyle(
+                              decoration: isDone
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              // PASAMOS LA RUTA DE LA FOTO PARA BORRARLA
+                              _deleteIncident(docId, isDone, localPath);
+                            },
+                          ),
                         ),
-                        onPressed: () {
-                          FirebaseFirestore.instance
-                              .collection('incidencias')
-                              .doc(docId)
-                              .update({'isDone': !isDone});
-                        },
-                      ),
-                      title: Text(
-                        data['title'],
-                        style: TextStyle(
-                          decoration: isDone
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // PASAMOS LA RUTA DE LA FOTO PARA BORRARLA
-                          _deleteIncident(docId, isDone, localPath);
-                        },
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+
+          //INDICADOR DE CARGA
+          if (_isLoading)
+            Container(
+              color: Colors.black45,
+              child: const Center(
+                child: CircularProgressIndicator(color: AppTheme.primary),
+              ),
+            ),
+        ],
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
