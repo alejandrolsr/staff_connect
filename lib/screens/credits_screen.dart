@@ -11,12 +11,11 @@ class CreditsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Créditos')),
       drawer: const SideMenu(currentPage: 'credits'),
       body: SizedBox(
-        width: double.infinity, //Ocupar todo el ancho
+        width: double.infinity,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              //Empujamos el contenido principal hacia el centro
               const Spacer(),
 
               //CONTENIDO PRINCIPAL

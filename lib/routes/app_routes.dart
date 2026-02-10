@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
-import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
+import '../screens/splash_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/weather_screen.dart'; 
+import '../screens/task_screen.dart';
+import '../screens/weather_screen.dart';
 import '../screens/credits_screen.dart';
-import '../screens/profile_screen.dart';
+import '../screens/settings_screen.dart'; // <--- IMPORTA LA NUEVA
 
 class AppRoutes {
-  static const String splash = 'splash';
-  static const String login = 'login';
-  static const String task = 'task';
-  static const String home = 'home';
-  static const String weather = 'weather';
-  static const String credits = 'credits';
-  static const String profile = 'profile';
+  static const initialRoute = 'splash';
 
-  /// Mapa de rutas
-  static Map<String, WidgetBuilder> routes = {
-    splash: (context) => const SplashScreen(),
-    login: (context) => const LoginScreen(),
-    home: (context) => const HomeScreen(),
-    weather: (context) => const WeatherScreen(),
-    credits: (context) => const CreditsScreen(),
-    profile: (context) => const ProfileScreen(),
+  // Nombres de rutas (constantes para evitar errores)
+  static const home = 'home';
+  static const login = 'login';
+  static const splash = 'splash';
+  static const tasks = 'tasks';
+  static const weather = 'weather';
+  static const credits = 'credits';
+  static const settings = 'settings'; // <--- NUEVA RUTA
+
+  static Map<String, Widget Function(BuildContext)> routes = {
+    'login': (BuildContext context) => const LoginScreen(),
+    'splash': (BuildContext context) => const SplashScreen(),
+    'home': (BuildContext context) => const HomeScreen(),
+    'tasks': (BuildContext context) => const TaskScreen(),
+    'weather': (BuildContext context) => const WeatherScreen(),
+    'credits': (BuildContext context) => const CreditsScreen(),
+    'settings': (BuildContext context) => const SettingsScreen(), // <--- AÑADIDA
   };
 }

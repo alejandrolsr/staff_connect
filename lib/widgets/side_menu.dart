@@ -9,161 +9,114 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          //CABECERA
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(color: AppTheme.primary),
-            accountName: const Text(
-              "Panel de Personal",
-              style: TextStyle(fontWeight: FontWeight.bold),
+          // CABECERA (Header)
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
             ),
-            accountEmail: Text(user?.email ?? "Invitado"),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 40, color: AppTheme.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 40, color: AppTheme.primary),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Bienvenido,',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+                Text(
+                  FirebaseAuth.instance.currentUser?.email ?? 'Usuario',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          ),
-
-          //INICIO
-          ListTile(
-            leading: Icon(
-              Icons.home_outlined,
-              color: currentPage == 'home' ? AppTheme.primary : Colors.grey,
-            ),
-            title: Text(
-              'Inicio',
-              style: TextStyle(
-                color: currentPage == 'home'
-                    ? AppTheme.primary
-                    : Colors.black87,
-                fontWeight: currentPage == 'home'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-              ),
-            ),
-            selected: currentPage == 'home',
-            onTap: () => _navigate(context, 'home'),
-          ),
-
-          //PERFIL
-          ListTile(
-            leading: Icon(
-              Icons.person_outline,
-              color: currentPage == 'profile' ? AppTheme.primary : Colors.grey,
-            ),
-            title: Text(
-              'Mi Perfil',
-              style: TextStyle(
-                color: currentPage == 'profile'
-                    ? AppTheme.primary
-                    : Colors.black87,
-                fontWeight: currentPage == 'profile'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-              ),
-            ),
-            selected: currentPage == 'profile',
-            onTap: () => _navigate(context, 'profile'),
           ),
 
           //TAREAS
           ListTile(
-            leading: Icon(
-              Icons.check_circle_outline,
-              color: currentPage == 'tasks' ? AppTheme.primary : Colors.grey,
-            ),
-            title: Text(
-              'Tareas',
-              style: TextStyle(
-                color: currentPage == 'tasks'
-                    ? AppTheme.primary
-                    : Colors.black87,
-                fontWeight: currentPage == 'tasks'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-              ),
-            ),
+            leading: const Icon(Icons.check_circle_outline),
+            title: const Text('Tareas Diarias'),
             selected: currentPage == 'tasks',
-            onTap: () => _navigate(context, 'tasks'),
+            selectedColor: AppTheme.primary,
+            onTap: () {
+              Navigator.pushReplacementNamed(context, 'tasks');
+            },
+          ),
+
+          //INCIDENCIAS
+          ListTile(
+            leading: const Icon(Icons.build_circle_outlined),
+            title: const Text('Incidencias'),
+            selected: currentPage == 'home',
+            selectedColor: AppTheme.primary,
+            onTap: () {
+              Navigator.pushReplacementNamed(context, 'home');
+            },
           ),
 
           //TIEMPO
           ListTile(
-            leading: Icon(
-              Icons.cloud_outlined,
-              color: currentPage == 'weather' ? AppTheme.primary : Colors.grey,
-            ),
-            title: Text(
-              'El Tiempo',
-              style: TextStyle(
-                color: currentPage == 'weather'
-                    ? AppTheme.primary
-                    : Colors.black87,
-                fontWeight: currentPage == 'weather'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-              ),
-            ),
+            leading: const Icon(Icons.wb_sunny_outlined),
+            title: const Text('El Tiempo'),
             selected: currentPage == 'weather',
-            onTap: () => _navigate(context, 'weather'),
+            selectedColor: AppTheme.primary,
+            onTap: () {
+              Navigator.pushReplacementNamed(context, 'weather');
+            },
           ),
 
           const Divider(),
 
+          //AJUSTES
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Ajustes'),
+            selected: currentPage == 'settings',
+            selectedColor: AppTheme.primary,
+            onTap: () {
+              Navigator.pushReplacementNamed(context, 'settings');
+            },
+          ),
+
           //CRÉDITOS
           ListTile(
-            leading: Icon(
-              Icons.info_outline,
-              color: currentPage == 'credits' ? AppTheme.primary : Colors.grey,
-            ),
-            title: Text(
-              'Créditos',
-              style: TextStyle(
-                color: currentPage == 'credits'
-                    ? AppTheme.primary
-                    : Colors.black87,
-                fontWeight: currentPage == 'credits'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-              ),
-            ),
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Créditos'),
             selected: currentPage == 'credits',
-            onTap: () => _navigate(context, 'credits'),
+            selectedColor: AppTheme.primary,
+            onTap: () {
+              Navigator.pushReplacementNamed(context, 'credits');
+            },
           ),
+
+          const Divider(),
 
           //SALIR
           ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              'Cerrar Sesión',
-              style: TextStyle(color: Colors.red),
-            ),
+            leading: const Icon(Icons.exit_to_app, color: Colors.red),
+            title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  'login',
-                  (route) => false,
-                );
+                Navigator.pushReplacementNamed(context, 'login');
               }
             },
           ),
         ],
       ),
     );
-  }
-
-  //Función para navegar limpio
-  void _navigate(BuildContext context, String routeName) {
-    Navigator.pop(context);
-    if (currentPage != routeName) {
-      Navigator.pushReplacementNamed(context, routeName);
-    }
   }
 }
