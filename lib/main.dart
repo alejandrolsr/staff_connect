@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
-      builder: (_, currentMode, __) {
+      builder: (_, currentMode, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Staff Connect',

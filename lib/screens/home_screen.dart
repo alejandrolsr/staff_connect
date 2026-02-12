@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _textController = TextEditingController();
-  final TextEditingController _solutionController = TextEditingController(); // NUEVO: Controlador para la solución
+  final TextEditingController _solutionController = TextEditingController();
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
   File? _selectedImage;
