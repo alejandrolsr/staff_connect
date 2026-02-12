@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import '../theme/app_theme.dart';
 import '../widgets/side_menu.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,6 +28,37 @@ class _HomeScreenState extends State<HomeScreen> {
         _selectedImage = File(pickedFile.path);
       });
     }
+  }
+
+  //FUNCIÓN PARA VER FOTO
+  void _showZoomImage(String imagePath) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: EdgeInsets.zero, 
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                panEnabled: true, 
+                minScale: 0.5,
+                maxScale: 4.0,   
+                child: Image.file(File(imagePath)),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _addIncident() async {
@@ -96,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'completedBy': currentUser?.email, //Guardamos quién lo arregló
                   'completedDate': Timestamp.now(),
                 });
-                if (mounted) Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               }
             },
             child: const Text('Marcar Solucionada', style: TextStyle(color: Colors.white)),
@@ -206,9 +236,16 @@ class _HomeScreenState extends State<HomeScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               child: Column(
                 children: [
-                  //FOTO
+                
                   if (localPath != null && File(localPath).existsSync())
-                    SizedBox(height: 150, width: double.infinity, child: Image.file(File(localPath), fit: BoxFit.cover)),
+                    GestureDetector(
+                      onTap: () => _showZoomImage(localPath), 
+                      child: SizedBox(
+                        height: 150, 
+                        width: double.infinity, 
+                        child: Image.file(File(localPath), fit: BoxFit.cover)
+                      ),
+                    ),
                   
                   ListTile(
                     title: Text(data['title'], style: const TextStyle(fontWeight: FontWeight.bold)),

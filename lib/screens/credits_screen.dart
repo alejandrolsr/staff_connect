@@ -40,7 +40,7 @@ class CreditsScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
-              const Text('Versión 1.0.0'),
+              const Text('Versión 1.2.5'),
 
               //Empujamos todo lo que hay debajo al final de la pantalla
               const Spacer(),
