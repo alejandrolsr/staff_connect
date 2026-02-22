@@ -57,7 +57,7 @@ class _TaskScreenState extends State<TaskScreen> {
     super.dispose();
   }
 
-  Future<void> _loadTaskStatus() async {
+  Future<void> _loadTaskStatus() async { //Carga el estado de las tareas desde SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     
     for (var task in _currentTasks) {
@@ -69,7 +69,7 @@ class _TaskScreenState extends State<TaskScreen> {
     if (mounted) setState(() {}); 
   }
 
-  Future<void> _saveTaskStatus(int index, bool value) async {
+  Future<void> _saveTaskStatus(int index, bool value) async { //Guarda el estado de una tarea específica en SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final task = _currentTasks[index];
     
@@ -78,7 +78,7 @@ class _TaskScreenState extends State<TaskScreen> {
     await prefs.setBool(key, value);
   }
 
-  void _updateTimeAndShift() {
+  void _updateTimeAndShift() { //Actualiza la hora, fecha, turno actual y lista de tareas cada segundo
     final DateTime now = DateTime.now();
     final int hour = now.hour;
     

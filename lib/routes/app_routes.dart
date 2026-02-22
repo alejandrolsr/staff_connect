@@ -5,19 +5,19 @@ import '../screens/home_screen.dart';
 import '../screens/task_screen.dart';
 import '../screens/weather_screen.dart';
 import '../screens/credits_screen.dart';
-import '../screens/settings_screen.dart'; // <--- IMPORTA LA NUEVA
+import '../screens/settings_screen.dart';
 
 class AppRoutes {
   static const initialRoute = 'splash';
 
-  // Nombres de rutas (constantes para evitar errores)
+  //Nombres de rutas (constantes para evitar errores)
   static const home = 'home';
   static const login = 'login';
   static const splash = 'splash';
   static const tasks = 'tasks';
   static const weather = 'weather';
   static const credits = 'credits';
-  static const settings = 'settings'; // <--- NUEVA RUTA
+  static const settings = 'settings'; 
 
   static Map<String, Widget Function(BuildContext)> routes = {
     'login': (BuildContext context) => const LoginScreen(),
@@ -26,6 +26,6 @@ class AppRoutes {
     'tasks': (BuildContext context) => const TaskScreen(),
     'weather': (BuildContext context) => const WeatherScreen(),
     'credits': (BuildContext context) => const CreditsScreen(),
-    'settings': (BuildContext context) => const SettingsScreen(), // <--- AÑADIDA
+    'settings': (BuildContext context) => const SettingsScreen(),
   };
 }

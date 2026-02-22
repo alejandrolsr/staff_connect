@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   File? _selectedImage;
   bool _isLoading = false;
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(ImageSource source) async { //Función para seleccionar imagen desde cámara o galería.
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source, imageQuality: 50);
     if (pickedFile != null) {

@@ -67,7 +67,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                 
-                  Card(
+                  Card( //Card principal con icono, temperatura y descripción
                     elevation: 5,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     color: AppTheme.primary,
@@ -99,7 +99,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                     ],
                   ),
                   
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 40), 
                   ElevatedButton.icon(
                     onPressed: _refreshWeather,
                     icon: const Icon(Icons.refresh),
@@ -119,7 +119,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
     );
   }
 
-  Widget _buildInfoCard(IconData icon, String label, String value) {
+  Widget _buildInfoCard(IconData icon, String label, String value) { //Card para mostrar información adicional (humedad, viento, etc).
     return Card(
       elevation: 2,
       child: Padding(

@@ -6,7 +6,7 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
+  await Firebase.initializeApp( //Inicializo Firebase con la configuración específica para cada plataforma.
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MyApp());
@@ -15,7 +15,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light); //Controla el modo de tema actual.
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       valueListenable: themeNotifier,
       builder: (_, currentMode, _) {
         return MaterialApp(
-          debugShowCheckedModeBanner: false,
+          debugShowCheckedModeBanner: false, //Elimino etiqueta de debug.
           title: 'Staff Connect',
           
           //Configuración de Temas
